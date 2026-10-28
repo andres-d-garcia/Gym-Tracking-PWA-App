@@ -19,6 +19,7 @@ import {
   clearClientsAndPayments,
   DEFAULT_SETTINGS,
 } from '../services/storage';
+import { sendTestNotification } from '../services/notifications';
 import { ResponsiveModal } from './ResponsiveModal';
 
 interface SettingsModalProps {
@@ -68,6 +69,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [overdueTemplate, setOverdueTemplate] = useState(settings.templates.overdue);
   const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
 
+  const [notifEnabled, setNotifEnabled] = useState(settings.notifications?.enabled ?? true);
+  const [notifDaysBefore, setNotifDaysBefore] = useState(
+    String(settings.notifications?.daysBefore ?? 3)
+  );
+  const [notifOnDueDate, setNotifOnDueDate] = useState(
+    settings.notifications?.notifyOnDueDate ?? true
+  );
+  const [notifHour, setNotifHour] = useState(settings.notifications?.hour ?? 9);
+
   const [importJsonText, setImportJsonText] = useState('');
   const [showImportBox, setShowImportBox] = useState(false);
 
@@ -87,6 +97,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setDueSoonTemplate(settings.templates.dueSoon);
       setDueTodayTemplate(settings.templates.dueToday);
       setOverdueTemplate(settings.templates.overdue);
+      setNotifEnabled(settings.notifications?.enabled ?? true);
+      setNotifDaysBefore(String(settings.notifications?.daysBefore ?? 3));
+      setNotifOnDueDate(settings.notifications?.notifyOnDueDate ?? true);
+      setNotifHour(settings.notifications?.hour ?? 9);
       setSelection(null);
       setShowImportBox(false);
       setImportJsonText('');
@@ -147,6 +161,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleSave = () => {
+    const parsedDays = Math.max(1, Math.min(30, parseInt(notifDaysBefore, 10) || 3));
     const updated: TrainerSettings = {
       ...settings,
       trainerName: trainerName.trim() || 'Derwin',
@@ -168,10 +183,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         dueToday: dueTodayTemplate,
         overdue: overdueTemplate,
       },
+      notifications: {
+        enabled: notifEnabled,
+        daysBefore: parsedDays,
+        notifyOnDueDate: notifOnDueDate,
+        hour: notifHour,
+      },
     };
 
     onSaveSettings(updated);
     onClose();
+  };
+
+  const handleTestNotification = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert(
+        'Modo Web',
+        'Las notificaciones nativas funcionan directamente en el teléfono al instalar la APK.'
+      );
+      return;
+    }
+    const parsedDays = Math.max(1, Math.min(30, parseInt(notifDaysBefore, 10) || 3));
+    const ok = await sendTestNotification(parsedDays);
+    if (!ok) {
+      Alert.alert(
+        'Permiso requerido',
+        'Activa el permiso de notificaciones para Gym Tracking en los ajustes de tu teléfono.'
+      );
+    }
   };
 
   const handleExportBackup = async () => {
@@ -298,6 +337,115 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   keyboardType="numeric"
                 />
               </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>Avisos en el teléfono (Notificaciones)</Text>
+            <View style={styles.notifCard}>
+              <TouchableOpacity
+                style={styles.toggleRow}
+                onPress={() => setNotifEnabled(!notifEnabled)}
+                activeOpacity={0.75}
+              >
+                <View style={{ flex: 1, paddingRight: 10 }}>
+                  <Text style={styles.toggleTitle}>Activar notificaciones de vencimiento</Text>
+                  <Text style={styles.toggleSubtitle}>
+                    El teléfono te avisará automáticamente cuando un alumno esté por vencer
+                  </Text>
+                </View>
+                <View style={[styles.switchPill, notifEnabled && styles.switchPillActive]}>
+                  <View style={[styles.switchThumb, notifEnabled && styles.switchThumbActive]} />
+                </View>
+              </TouchableOpacity>
+
+              {notifEnabled ? (
+                <View style={styles.notifBody}>
+                  <Text style={styles.label}>
+                    ¿Cuántos días antes del vencimiento quieres el aviso?
+                  </Text>
+                  <View style={styles.daysRow}>
+                    {[1, 2, 3, 5, 7].map((d) => {
+                      const selected = Number(notifDaysBefore) === d;
+                      return (
+                        <TouchableOpacity
+                          key={d}
+                          style={[styles.dayChip, selected && styles.dayChipActive]}
+                          onPress={() => setNotifDaysBefore(String(d))}
+                        >
+                          <Text
+                            style={[styles.dayChipText, selected && styles.dayChipTextActive]}
+                          >
+                            {d} {d === 1 ? 'día' : 'días'}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                    <TextInput
+                      style={[styles.input, styles.dayCustomInput]}
+                      value={notifDaysBefore}
+                      onChangeText={setNotifDaysBefore}
+                      keyboardType="numeric"
+                      placeholder="3"
+                      placeholderTextColor={COLORS.textMuted}
+                      maxLength={2}
+                    />
+                  </View>
+
+                  <Text style={styles.label}>Hora del aviso en tu teléfono</Text>
+                  <View style={styles.daysRow}>
+                    {[
+                      { h: 8, label: '8:00 AM' },
+                      { h: 9, label: '9:00 AM' },
+                      { h: 12, label: '12:00 PM' },
+                      { h: 18, label: '6:00 PM' },
+                    ].map((item) => {
+                      const selected = notifHour === item.h;
+                      return (
+                        <TouchableOpacity
+                          key={item.h}
+                          style={[styles.dayChip, selected && styles.dayChipActive]}
+                          onPress={() => setNotifHour(item.h)}
+                        >
+                          <Text
+                            style={[styles.dayChipText, selected && styles.dayChipTextActive]}
+                          >
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.toggleRow, { marginTop: 12 }]}
+                    onPress={() => setNotifOnDueDate(!notifOnDueDate)}
+                    activeOpacity={0.75}
+                  >
+                    <View style={{ flex: 1, paddingRight: 10 }}>
+                      <Text style={styles.toggleTitle}>Avisar también el mismo día de cobro</Text>
+                      <Text style={styles.toggleSubtitle}>
+                        Envía una alerta adicional el día exacto en que vence el plan
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name={notifOnDueDate ? 'checkbox' : 'square-outline'}
+                      size={20}
+                      color={notifOnDueDate ? COLORS.primary : COLORS.textMuted}
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.testNotifBtn}
+                    onPress={handleTestNotification}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="notifications-outline" size={15} color={COLORS.text} />
+                    <Text style={styles.testNotifBtnText}>
+                      Probar notificación ahora ({Number(notifDaysBefore) || 3}{' '}
+                      {(Number(notifDaysBefore) || 3) === 1 ? 'día' : 'días'} antes)
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
             </View>
 
             <Text style={styles.sectionTitle}>Mis datos de pago (para WhatsApp)</Text>
@@ -670,5 +818,107 @@ const styles = StyleSheet.create({
     color: COLORS.primaryText,
     fontSize: 14,
     fontWeight: '600',
+  },
+  notifCard: {
+    backgroundColor: COLORS.surfaceLight,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    marginTop: 4,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  toggleTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  toggleSubtitle: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  switchPill: {
+    width: 42,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.surfaceElevated,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchPillActive: {
+    backgroundColor: COLORS.success,
+  },
+  switchThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.textMuted,
+  },
+  switchThumbActive: {
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-end',
+  },
+  notifBody: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.surfaceBorder,
+  },
+  daysRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  dayChip: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    paddingHorizontal: 10,
+    height: 34,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  dayChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  dayChipTextActive: {
+    color: COLORS.primaryText,
+    fontWeight: '600',
+  },
+  dayCustomInput: {
+    width: 48,
+    height: 34,
+    textAlign: 'center',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 6,
+  },
+  testNotifBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surfaceElevated,
+    height: 36,
+    borderRadius: 8,
+    marginTop: 14,
+  },
+  testNotifBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
   },
 });

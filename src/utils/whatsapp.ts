@@ -43,13 +43,14 @@ export function formatPaymentDetails(settings: TrainerSettings): string {
 
 export function buildWhatsAppMessage(client: Client, settings: TrainerSettings): string {
   const days = getDaysDifference(client.nextDueDate);
+  const dueSoonDays = settings.notifications?.daysBefore ?? 3;
   let template = settings.templates.generalReminder;
 
   if (days < 0) {
     template = settings.templates.overdue;
   } else if (days === 0) {
     template = settings.templates.dueToday;
-  } else if (days <= 3) {
+  } else if (days <= dueSoonDays) {
     template = settings.templates.dueSoon;
   }
 

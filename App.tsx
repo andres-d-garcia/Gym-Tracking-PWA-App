@@ -17,6 +17,7 @@ import {
   initialWindowMetrics,
 } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as Notifications from 'expo-notifications';
 import { COLORS } from './src/constants/theme';
 import { Client, PaymentRecord, TrainerSettings, ClientStatus } from './src/types';
 import {
@@ -28,6 +29,7 @@ import {
   saveSettings,
   DEFAULT_SETTINGS,
 } from './src/services/storage';
+import { syncClientNotifications } from './src/services/notifications';
 import { getDaysDifference, getClientStatus } from './src/utils/date';
 import { cleanPhoneNumber, buildWhatsAppMessage, openWhatsApp } from './src/utils/whatsapp';
 
@@ -105,6 +107,29 @@ function MainScreen() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      syncClientNotifications(clients, settings);
+    }
+  }, [loading, clients, settings]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as
+        | { clientId?: string }
+        | undefined;
+      if (data?.clientId) {
+        const matched = clients.find((c) => c.id === data.clientId);
+        if (matched) {
+          setClientForWhatsApp(matched);
+          setPreviewWhatsAppVisible(true);
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [clients]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -208,6 +233,8 @@ function MainScreen() {
     await saveSettings(newSettings);
   };
 
+  const dueSoonDays = settings.notifications?.daysBefore ?? 3;
+
   const { overdueCount, dueSoonCount, upToDateCount, pendingAmount, collectedAmount } =
     useMemo(() => {
       let overdue = 0;
@@ -216,7 +243,7 @@ function MainScreen() {
       let pending = 0;
 
       clients.forEach((c) => {
-        const status = getClientStatus(c.nextDueDate);
+        const status = getClientStatus(c.nextDueDate, dueSoonDays);
         const paid = c.paidAmount || 0;
         const remaining = Math.max(0, Math.round((c.amount - paid) * 100) / 100);
 
@@ -251,13 +278,13 @@ function MainScreen() {
         pendingAmount: pending,
         collectedAmount: collected,
       };
-    }, [clients, payments]);
+    }, [clients, payments, dueSoonDays]);
 
   const filteredClients = useMemo(() => {
     return clients
       .filter((c) => {
         if (statusFilter !== 'ALL') {
-          const status = getClientStatus(c.nextDueDate);
+          const status = getClientStatus(c.nextDueDate, dueSoonDays);
           if (status !== statusFilter) return false;
         }
         if (searchQuery.trim()) {
@@ -274,7 +301,7 @@ function MainScreen() {
         const daysB = getDaysDifference(b.nextDueDate);
         return daysA - daysB;
       });
-  }, [clients, statusFilter, searchQuery]);
+  }, [clients, statusFilter, searchQuery, dueSoonDays]);
 
   if (loading) {
     return (
@@ -345,6 +372,7 @@ function MainScreen() {
           renderItem={({ item }) => (
             <ClientCard
               client={item}
+              dueSoonDays={dueSoonDays}
               onDirectWhatsApp={handleDirectWhatsApp}
               onPreviewWhatsApp={handlePreviewWhatsApp}
               onRegisterPayment={handleOpenPayment}

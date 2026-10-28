@@ -24,10 +24,10 @@ export function getDaysDifference(dueDateStr: string): number {
   return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export function getClientStatus(dueDateStr: string): ClientStatus {
+export function getClientStatus(dueDateStr: string, dueSoonDays: number = 3): ClientStatus {
   const days = getDaysDifference(dueDateStr);
   if (days < 0) return 'OVERDUE';
-  if (days <= 3) return 'DUE_SOON';
+  if (days <= dueSoonDays) return 'DUE_SOON';
   return 'UP_TO_DATE';
 }
 

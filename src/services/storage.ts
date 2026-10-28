@@ -13,6 +13,12 @@ export const DEFAULT_SETTINGS: TrainerSettings = {
   gymName: 'Gym Tracking',
   currency: '$',
   defaultCountryCode: '58',
+  notifications: {
+    enabled: true,
+    daysBefore: 3,
+    notifyOnDueDate: true,
+    hour: 9,
+  },
   paymentDetails: {
     pagoMovilBank: 'Banesco (0134)',
     pagoMovilPhone: '0412-1234567',
@@ -222,7 +228,23 @@ export async function getSettings(): Promise<TrainerSettings> {
       await saveSettings(DEFAULT_SETTINGS);
       return DEFAULT_SETTINGS;
     }
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
+    const parsed = JSON.parse(data);
+    return {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      notifications: {
+        ...DEFAULT_SETTINGS.notifications,
+        ...(parsed.notifications || {}),
+      },
+      paymentDetails: {
+        ...DEFAULT_SETTINGS.paymentDetails,
+        ...(parsed.paymentDetails || {}),
+      },
+      templates: {
+        ...DEFAULT_SETTINGS.templates,
+        ...(parsed.templates || {}),
+      },
+    };
   } catch (error) {
     console.error('Error al cargar configuración:', error);
     return DEFAULT_SETTINGS;

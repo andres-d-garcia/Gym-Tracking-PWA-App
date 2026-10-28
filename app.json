@@ -37,6 +37,13 @@
         {
           "photosPermission": "Permite seleccionar el capture o comprobante de pago de la galería."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-foreground.png",
+          "color": "#EF4444"
+        }
       ]
     ]
   }

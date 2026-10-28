@@ -40,6 +40,12 @@ export interface TrainerSettings {
   gymName: string;
   currency: string;
   defaultCountryCode: string;
+  notifications: {
+    enabled: boolean;
+    daysBefore: number; // X días antes del vencimiento
+    notifyOnDueDate: boolean; // Avisar también el día que vence
+    hour: number; // Hora del aviso (ej: 9 = 9:00 AM)
+  };
   paymentDetails: {
     pagoMovilBank: string;
     pagoMovilPhone: string;

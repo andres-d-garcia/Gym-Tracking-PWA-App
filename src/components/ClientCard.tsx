@@ -7,6 +7,7 @@ import { getDaysDifference, getClientStatus, formatDateSpanish } from '../utils/
 
 interface ClientCardProps {
   client: Client;
+  dueSoonDays?: number;
   onDirectWhatsApp: (client: Client) => void;
   onPreviewWhatsApp: (client: Client) => void;
   onRegisterPayment: (client: Client) => void;
@@ -15,13 +16,14 @@ interface ClientCardProps {
 
 export const ClientCard: React.FC<ClientCardProps> = ({
   client,
+  dueSoonDays = 3,
   onDirectWhatsApp,
   onPreviewWhatsApp,
   onRegisterPayment,
   onEditClient,
 }) => {
   const daysDiff = getDaysDifference(client.nextDueDate);
-  const status = getClientStatus(client.nextDueDate);
+  const status = getClientStatus(client.nextDueDate, dueSoonDays);
   const formattedDate = formatDateSpanish(client.nextDueDate);
 
   const paid = client.paidAmount || 0;
