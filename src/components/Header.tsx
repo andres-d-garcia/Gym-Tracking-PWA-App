@@ -11,9 +11,11 @@ interface HeaderProps {
   topInset: number;
   searchVisible: boolean;
   searchQuery: string;
+  alertCount?: number;
   onToggleSearch: () => void;
   onChangeSearch: (q: string) => void;
   onOpenNewClient: () => void;
+  onOpenNotifications: () => void;
   onOpenSettings: () => void;
   onOpenHistory: () => void;
 }
@@ -25,9 +27,11 @@ export const Header: React.FC<HeaderProps> = ({
   topInset,
   searchVisible,
   searchQuery,
+  alertCount = 0,
   onToggleSearch,
   onChangeSearch,
   onOpenNewClient,
+  onOpenNotifications,
   onOpenSettings,
   onOpenHistory,
 }) => {
@@ -56,6 +60,16 @@ export const Header: React.FC<HeaderProps> = ({
               size={20}
               color={searchVisible ? COLORS.text : COLORS.textSecondary}
             />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={onOpenNotifications}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Avisos y notificaciones"
+          >
+            <Ionicons name="notifications-outline" size={19} color={COLORS.textSecondary} />
+            {alertCount > 0 ? <View style={styles.alertDot} /> : null}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -134,10 +148,20 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 10,
   },
   iconBtn: {
     padding: 4,
+    position: 'relative',
+  },
+  alertDot: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: COLORS.danger,
   },
   addBtn: {
     width: 32,

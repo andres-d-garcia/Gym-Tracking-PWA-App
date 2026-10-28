@@ -42,6 +42,7 @@ import { PaymentModal } from './src/components/PaymentModal';
 import { WhatsAppPreviewModal } from './src/components/WhatsAppPreviewModal';
 import { SettingsModal } from './src/components/SettingsModal';
 import { PaymentHistoryModal } from './src/components/PaymentHistoryModal';
+import { NotificationsModal } from './src/components/NotificationsModal';
 
 const FALLBACK_METRICS = {
   frame: { x: 0, y: 0, width: 0, height: 0 },
@@ -85,6 +86,7 @@ function MainScreen() {
 
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [notificationsModalVisible, setNotificationsModalVisible] = useState(false);
 
   const loadData = async () => {
     try {
@@ -327,12 +329,14 @@ function MainScreen() {
           topInset={topFallback}
           searchVisible={searchVisible}
           searchQuery={searchQuery}
+          alertCount={overdueCount + dueSoonCount}
           onToggleSearch={handleToggleSearch}
           onChangeSearch={setSearchQuery}
           onOpenNewClient={() => {
             setClientToEdit(null);
             setClientModalVisible(true);
           }}
+          onOpenNotifications={() => setNotificationsModalVisible(true)}
           onOpenSettings={() => setSettingsModalVisible(true)}
           onOpenHistory={() => setHistoryModalVisible(true)}
         />
@@ -421,6 +425,15 @@ function MainScreen() {
           payments={payments}
           currency={settings.currency}
           onClose={() => setHistoryModalVisible(false)}
+        />
+
+        <NotificationsModal
+          visible={notificationsModalVisible}
+          settings={settings}
+          clients={clients}
+          onClose={() => setNotificationsModalVisible(false)}
+          onSaveSettings={handleSaveSettings}
+          onDirectWhatsApp={handleDirectWhatsApp}
         />
       </View>
     </SafeAreaView>

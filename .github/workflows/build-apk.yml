@@ -63,13 +63,13 @@ jobs:
       - name: Publish APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.1
-          name: "Gym Tracking v1.0.1 (APK Android)"
+          tag_name: v1.0.2
+          name: "Gym Tracking v1.0.2 (APK Android con Notificaciones)"
           body: |
-            ### 📱 Instalador Android (.apk) — Gym Tracking
+            ### 📱 Instalador Android (.apk) — Gym Tracking v1.0.2
             Descarga el archivo **`Gym-Tracking.apk`** adjunto abajo e instálalo directamente en tu teléfono Android.
-            - **Nombre de la app:** Gym Tracking.
-            - **Diseño 100% Responsive:** Ajuste dinámico ante el teclado virtual y respeto automático de la barra de navegación inferior y barra de estado superior del teléfono.
+            - **🔔 Icono de Campana y Avisos en el Teléfono:** Configura cuántos días antes del vencimiento quieres recibir notificaciones locales en tu celular y prueba la alerta al instante.
+            - **Diseño 100% Responsive:** Ajuste dinámico ante el teclado virtual y respeto automático de la barra inferior y superior del teléfono.
             - **100% Offline** (persistencia local en el teléfono).
             - **Botón 1-Clic a WhatsApp** con plantillas personalizables y abonos parciales.
           files: Gym-Tracking.apk
