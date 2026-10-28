@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Derwin Gym",
+    "name": "Derwin Baptista",
     "slug": "derwin-gym-tracking",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,6 +8,11 @@
     "scheme": "derwingym",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#09090B",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.derwin.gymtracking"
@@ -15,10 +20,8 @@
     "android": {
       "package": "com.derwin.gymtracking",
       "adaptiveIcon": {
-        "backgroundColor": "#09090B",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
     },

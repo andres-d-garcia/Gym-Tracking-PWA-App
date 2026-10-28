@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
@@ -19,7 +19,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  gymName,
   pendingAmount,
   collectedAmount,
   currency,
@@ -33,12 +32,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenHistory,
 }) => {
   return (
-    <View style={[styles.container, { paddingTop: Math.max(topInset, 16) + 8 }]}>
+    <View style={[styles.container, { paddingTop: Math.max(topInset, 14) + 6 }]}>
       <View style={styles.row}>
-        <View style={styles.titleBlock}>
-          <Text style={styles.title} numberOfLines={1}>
-            {gymName}
-          </Text>
+        <View style={styles.brandBlock}>
+          <Image
+            source={require('../../assets/logo-header.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.subtitle}>
             Pendiente {currency}{pendingAmount}  ·  Cobrado {currency}{collectedAmount}
           </Text>
@@ -116,15 +117,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  titleBlock: {
+  brandBlock: {
     flex: 1,
     paddingRight: 12,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.text,
-    letterSpacing: -0.5,
+  logo: {
+    width: 124,
+    height: 48,
+    marginLeft: -2,
   },
   subtitle: {
     fontSize: 12,
