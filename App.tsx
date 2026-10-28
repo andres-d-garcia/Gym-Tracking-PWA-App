@@ -214,14 +214,20 @@ function MainScreen() {
 
       clients.forEach((c) => {
         const status = getClientStatus(c.nextDueDate);
+        const paid = c.paidAmount || 0;
+        const remaining = Math.max(0, Math.round((c.amount - paid) * 100) / 100);
+
         if (status === 'OVERDUE') {
           overdue++;
-          pending += c.amount;
+          pending += remaining;
         } else if (status === 'DUE_SOON') {
           dueSoon++;
-          pending += c.amount;
+          pending += remaining;
         } else {
           upToDate++;
+          if (paid > 0 && remaining > 0) {
+            pending += remaining;
+          }
         }
       });
 

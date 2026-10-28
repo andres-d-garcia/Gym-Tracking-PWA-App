@@ -6,7 +6,8 @@ export interface Client {
   phone: string;
   countryCode: string; // e.g. "58"
   planName: string; // e.g. "Personalizado", "Sala de Máquinas"
-  amount: number;
+  amount: number; // Cuota total del ciclo
+  paidAmount?: number; // Monto abonado en el ciclo actual (0 si no hay abono parcial)
   currency: string; // "$" | "Bs"
   startDate: string; // YYYY-MM-DD
   nextDueDate: string; // YYYY-MM-DD
@@ -29,6 +30,8 @@ export interface PaymentRecord {
   reference?: string;
   receiptImageUri?: string; // Capture de la transacción
   verified?: boolean; // Transacción comprobada
+  isPartial?: boolean; // Indica si fue un abono parcial
+  remainingAfter?: number; // Saldo restante tras este pago
   notes?: string;
 }
 

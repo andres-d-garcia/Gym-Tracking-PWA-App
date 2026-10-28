@@ -61,7 +61,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   useEffect(() => {
     if (client) {
-      setAmount(String(client.amount));
+      const paidSoFar = client.paidAmount || 0;
+      const remaining = Math.max(0, Math.round((client.amount - paidSoFar) * 100) / 100);
+      setAmount(String(remaining > 0 ? remaining : client.amount));
       setMethod('Pago Móvil');
       setReference('');
       setReceiptImageUri(undefined);
@@ -72,6 +74,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   }, [client, visible]);
 
   if (!client) return null;
+
+  const paidSoFar = client.paidAmount || 0;
+  const currentRemaining = Math.max(0, Math.round((client.amount - paidSoFar) * 100) / 100);
+  const enteredAmount = parseFloat(amount) || 0;
+  const remainingAfterThisPayment = Math.max(
+    0,
+    Math.round((currentRemaining - enteredAmount) * 100) / 100
+  );
+  const isPartialPayment = enteredAmount > 0 && remainingAfterThisPayment > 0;
+
+  const handleAmountChange = (val: string) => {
+    setAmount(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      if (paidSoFar + num < client.amount) {
+        // Es un abono parcial -> por defecto no extender la fecha hasta completar
+        setRenewEnabled(false);
+      } else {
+        // Completa la cuota -> por defecto extender la fecha al nuevo ciclo
+        setRenewEnabled(true);
+      }
+    }
+  };
 
   const baseDateForRenewal =
     getDaysDifference(client.nextDueDate) < 0 ? getTodayString() : client.nextDueDate;
@@ -137,7 +162,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <View style={styles.header}>
             <View>
               <Text style={styles.headerTitle}>Registrar pago</Text>
-              <Text style={styles.headerSub}>{client.fullName}</Text>
+              <Text style={styles.headerSub}>
+                {client.fullName} · Cuota {client.currency}{client.amount}
+                {paidSoFar > 0 ? ` (Abonado: ${client.currency}${paidSoFar})` : ''}
+              </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Ionicons name="close" size={20} color={COLORS.textSecondary} />
@@ -153,7 +181,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   placeholder="0.00"
                   placeholderTextColor={COLORS.textMuted}
                   value={amount}
-                  onChangeText={setAmount}
+                  onChangeText={handleAmountChange}
                   keyboardType="numeric"
                 />
               </View>
@@ -169,6 +197,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 />
               </View>
             </View>
+
+            {/* Indicador dinámico de Abono Parcial vs Pago Completo */}
+            {enteredAmount > 0 ? (
+              <View style={styles.balanceBanner}>
+                <Ionicons
+                  name={isPartialPayment ? 'pie-chart-outline' : 'checkmark-done-outline'}
+                  size={15}
+                  color={isPartialPayment ? COLORS.warningLight : COLORS.primaryLight}
+                />
+                <Text
+                  style={[
+                    styles.balanceBannerText,
+                    { color: isPartialPayment ? COLORS.warningLight : COLORS.primaryLight },
+                  ]}
+                >
+                  {isPartialPayment
+                    ? `Abono parcial: Quedarán pendientes ${client.currency}${remainingAfterThisPayment} de ${client.currency}${client.amount}`
+                    : `Cubre el total pendiente (${client.currency}${client.amount})`}
+                </Text>
+              </View>
+            ) : null}
 
             <Text style={styles.label}>Método</Text>
             <View style={styles.methodsContainer}>
@@ -253,7 +302,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <Text style={styles.toggleSubtitle}>
                     {renewEnabled
                       ? `Nuevo cobro: ${formatDateSpanish(nextCalculatedDueDate)}`
-                      : 'Mantener fecha actual'}
+                      : 'Mantener fecha actual (recomendado para abonos)'}
                   </Text>
                 </View>
                 <Switch
@@ -302,7 +351,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </View>
 
             <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm} activeOpacity={0.8}>
-              <Text style={styles.confirmBtnText}>Confirmar pago</Text>
+              <Text style={styles.confirmBtnText}>
+                {isPartialPayment
+                  ? `Registrar abono (${client.currency}${enteredAmount})`
+                  : 'Confirmar pago'}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -373,6 +426,21 @@ const styles = StyleSheet.create({
     height: 40,
     color: COLORS.text,
     fontSize: 14,
+  },
+  balanceBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: COLORS.surfaceLight,
+  },
+  balanceBannerText: {
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
   },
   methodsContainer: {
     flexDirection: 'row',

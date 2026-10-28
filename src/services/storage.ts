@@ -157,31 +157,60 @@ export async function addPayment(
   renewClientMonth: boolean = true,
   customNextDueDate?: string
 ): Promise<{ payment: PaymentRecord; updatedClient?: Client }> {
+  const clients = await getClients();
+  const index = clients.findIndex((c) => c.id === payment.clientId);
+
+  let updatedClient: Client | undefined;
+  let isPartial = false;
+  let remainingAfter = 0;
+
+  if (index !== -1) {
+    const current = clients[index];
+    const currentPaid = current.paidAmount || 0;
+    const totalPaidNow = Math.round((currentPaid + payment.amount) * 100) / 100;
+
+    if (totalPaidNow < current.amount) {
+      // Abono parcial: aún queda saldo pendiente en este ciclo
+      isPartial = true;
+      remainingAfter = Math.round((current.amount - totalPaidNow) * 100) / 100;
+      const nextDue = renewClientMonth
+        ? customNextDueDate || addMonthsToDate(current.nextDueDate, 1)
+        : current.nextDueDate;
+
+      clients[index] = {
+        ...current,
+        paidAmount: totalPaidNow,
+        nextDueDate: nextDue,
+      };
+    } else {
+      // Pago completo o liquidación del saldo restante: reinicia paidAmount a 0
+      isPartial = false;
+      remainingAfter = 0;
+      const nextDue = renewClientMonth
+        ? customNextDueDate || addMonthsToDate(current.nextDueDate, 1)
+        : current.nextDueDate;
+
+      clients[index] = {
+        ...current,
+        paidAmount: 0,
+        nextDueDate: nextDue,
+      };
+    }
+
+    updatedClient = clients[index];
+    await saveClients(clients);
+  }
+
   const newPayment: PaymentRecord = {
     ...payment,
     id: 'pay-' + Date.now(),
+    isPartial,
+    remainingAfter,
   };
 
   const payments = await getPayments();
   payments.unshift(newPayment);
   await savePayments(payments);
-
-  let updatedClient: Client | undefined;
-
-  if (renewClientMonth) {
-    const clients = await getClients();
-    const index = clients.findIndex((c) => c.id === payment.clientId);
-    if (index !== -1) {
-      const current = clients[index];
-      const newNextDueDate = customNextDueDate || addMonthsToDate(current.nextDueDate, 1);
-      clients[index] = {
-        ...current,
-        nextDueDate: newNextDueDate,
-      };
-      updatedClient = clients[index];
-      await saveClients(clients);
-    }
-  }
 
   return { payment: newPayment, updatedClient };
 }

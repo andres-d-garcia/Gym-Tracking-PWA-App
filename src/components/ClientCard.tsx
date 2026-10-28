@@ -24,6 +24,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const status = getClientStatus(client.nextDueDate);
   const formattedDate = formatDateSpanish(client.nextDueDate);
 
+  const paid = client.paidAmount || 0;
+  const remaining = Math.max(0, Math.round((client.amount - paid) * 100) / 100);
+  const hasPartialBalance = paid > 0 && remaining > 0;
+
   const getStatusMeta = () => {
     if (status === 'OVERDUE') {
       const days = Math.abs(daysDiff);
@@ -64,9 +68,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
           {client.fullName}
         </Text>
         <Text style={styles.subtitle} numberOfLines={1}>
-          <Text style={styles.amount}>
-            {client.currency}{client.amount}
-          </Text>
+          {hasPartialBalance ? (
+            <Text style={styles.partialAmount}>
+              Restan {client.currency}{remaining}{' '}
+              <Text style={styles.paidNote}>(Abonó {client.currency}{paid})</Text>
+            </Text>
+          ) : (
+            <Text style={styles.amount}>
+              {client.currency}{client.amount}
+            </Text>
+          )}
           {'  ·  '}
           <Text style={{ color: statusMeta.color }}>{statusMeta.label}</Text>
         </Text>
@@ -126,6 +137,14 @@ const styles = StyleSheet.create({
   amount: {
     color: COLORS.textSecondary,
     fontWeight: '500',
+  },
+  partialAmount: {
+    color: COLORS.warningLight,
+    fontWeight: '600',
+  },
+  paidNote: {
+    color: COLORS.textMuted,
+    fontWeight: '400',
   },
   actions: {
     flexDirection: 'row',

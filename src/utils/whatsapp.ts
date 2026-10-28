@@ -55,7 +55,12 @@ export function buildWhatsAppMessage(client: Client, settings: TrainerSettings):
 
   const paymentText = formatPaymentDetails(settings);
   const formattedDueDate = formatDateSpanish(client.nextDueDate);
-  const amountText = `${client.currency} ${client.amount}`;
+  const paid = client.paidAmount || 0;
+  const remaining = Math.max(0, Math.round((client.amount - paid) * 100) / 100);
+  const amountText =
+    paid > 0 && remaining > 0
+      ? `${client.currency} ${remaining} restantes (abonado ${client.currency} ${paid} de ${client.currency} ${client.amount})`
+      : `${client.currency} ${client.amount}`;
 
   return template
     .replace(/{nombre}/g, client.fullName)

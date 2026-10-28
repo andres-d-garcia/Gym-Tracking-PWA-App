@@ -99,6 +99,11 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                     <Text style={styles.clientName} numberOfLines={1}>
                       {item.clientName}
                     </Text>
+                    {item.isPartial ? (
+                      <Text style={styles.partialBadgeText}>
+                        Abono (Restan {item.currency}{item.remainingAfter})
+                      </Text>
+                    ) : null}
                     {item.verified ? (
                       <View style={styles.verifiedBadge}>
                         <Ionicons name="checkmark-circle" size={12} color={COLORS.success} />
@@ -272,6 +277,11 @@ const styles = StyleSheet.create({
   verifiedBadgeText: {
     fontSize: 11,
     color: COLORS.primaryLight,
+    fontWeight: '500',
+  },
+  partialBadgeText: {
+    fontSize: 11,
+    color: COLORS.warningLight,
     fontWeight: '500',
   },
   metaText: {
