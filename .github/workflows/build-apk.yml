@@ -52,26 +52,27 @@ jobs:
 
       - name: Rename APK
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk Derwin-Baptista-Gym.apk
+          cp android/app/build/outputs/apk/release/app-release.apk Gym-Tracking.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Derwin-Baptista-Gym-APK
-          path: Derwin-Baptista-Gym.apk
+          name: Gym-Tracking-APK
+          path: Gym-Tracking.apk
 
       - name: Publish APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: "Derwin Baptista Gym v1.0.0 (APK Android)"
+          tag_name: v1.0.1
+          name: "Gym Tracking v1.0.1 (APK Android)"
           body: |
-            ### 📱 Instalador Android (.apk) — Derwin Baptista Gym Tracking
-            Descarga el archivo **`Derwin-Baptista-Gym.apk`** adjunto abajo e instálalo directamente en tu teléfono Android.
+            ### 📱 Instalador Android (.apk) — Gym Tracking
+            Descarga el archivo **`Gym-Tracking.apk`** adjunto abajo e instálalo directamente en tu teléfono Android.
+            - **Nombre de la app:** Gym Tracking.
+            - **Diseño 100% Responsive:** Ajuste dinámico ante el teclado virtual y respeto automático de la barra de navegación inferior y barra de estado superior del teléfono.
             - **100% Offline** (persistencia local en el teléfono).
-            - **Botón 1-Clic a WhatsApp** con plantillas personalizables.
-            - **Soporte de abonos parciales, captures y referencias verificadas.**
-          files: Derwin-Baptista-Gym.apk
+            - **Botón 1-Clic a WhatsApp** con plantillas personalizables y abonos parciales.
+          files: Gym-Tracking.apk
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

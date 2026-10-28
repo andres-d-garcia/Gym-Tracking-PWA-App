@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
@@ -9,8 +8,6 @@ import {
   ScrollView,
   Alert,
   Switch,
-  KeyboardAvoidingView,
-  Platform,
   Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,6 +20,7 @@ import {
   getTodayString,
   getDaysDifference,
 } from '../utils/date';
+import { ResponsiveModal } from './ResponsiveModal';
 
 interface PaymentModalProps {
   visible: boolean;
@@ -153,26 +151,25 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.headerTitle}>Registrar pago</Text>
-              <Text style={styles.headerSub}>
-                {client.fullName} · Cuota {client.currency}{client.amount}
-                {paidSoFar > 0 ? ` (Abonado: ${client.currency}${paidSoFar})` : ''}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={20} color={COLORS.textSecondary} />
-            </TouchableOpacity>
-          </View>
+    <ResponsiveModal visible={visible} onClose={onClose}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Registrar pago</Text>
+          <Text style={styles.headerSub}>
+            {client.fullName} · Cuota {client.currency}{client.amount}
+            {paidSoFar > 0 ? ` (Abonado: ${client.currency}${paidSoFar})` : ''}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
             <View style={styles.row}>
               <View style={{ width: 110 }}>
                 <Text style={styles.label}>Monto ({client.currency})</Text>
@@ -358,9 +355,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </Text>
             </TouchableOpacity>
           </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </ResponsiveModal>
   );
 };
 

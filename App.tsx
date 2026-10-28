@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import {
   SafeAreaProvider,
+  SafeAreaView,
   useSafeAreaInsets,
   initialWindowMetrics,
 } from 'react-native-safe-area-context';
@@ -52,10 +53,12 @@ const FALLBACK_METRICS = {
 
 function MainScreen() {
   const insets = useSafeAreaInsets();
-  const topInset =
-    Platform.OS === 'android'
-      ? Math.max(insets.top, RNStatusBar.currentHeight || 24)
-      : insets.top;
+  const topFallback =
+    Platform.OS === 'android' && insets.top === 0
+      ? RNStatusBar.currentHeight || 24
+      : 0;
+  const bottomFallback =
+    Platform.OS === 'android' && insets.bottom === 0 ? 48 : 0;
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -282,7 +285,10 @@ function MainScreen() {
   }
 
   return (
-    <View style={styles.outerWrapper}>
+    <SafeAreaView
+      style={[styles.outerWrapper, { paddingBottom: bottomFallback }]}
+      edges={['top', 'bottom', 'left', 'right']}
+    >
       <View style={styles.container}>
         <StatusBar style="light" />
 
@@ -291,7 +297,7 @@ function MainScreen() {
           pendingAmount={pendingAmount}
           collectedAmount={collectedAmount}
           currency={settings.currency}
-          topInset={topInset}
+          topInset={topFallback}
           searchVisible={searchVisible}
           searchQuery={searchQuery}
           onToggleSearch={handleToggleSearch}
@@ -389,7 +395,7 @@ function MainScreen() {
           onClose={() => setHistoryModalVisible(false)}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

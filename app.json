@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Derwin Baptista",
-    "slug": "derwin-gym-tracking",
-    "version": "1.0.0",
+    "name": "Gym Tracking",
+    "slug": "gym-tracking",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "derwingym",
@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.derwin.gymtracking",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png"

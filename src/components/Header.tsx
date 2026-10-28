@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenHistory,
 }) => {
   return (
-    <View style={[styles.container, { paddingTop: Math.max(topInset, 14) + 6 }]}>
+    <View style={[styles.container, { paddingTop: topInset + 10 }]}>
       <View style={styles.row}>
         <View style={styles.brandBlock}>
           <Image

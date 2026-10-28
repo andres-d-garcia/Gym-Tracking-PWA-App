@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
@@ -8,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +18,7 @@ import {
   getDaysDifference,
   formatDateSpanish,
 } from '../utils/date';
+import { ResponsiveModal } from './ResponsiveModal';
 
 interface ClientModalProps {
   visible: boolean;
@@ -194,22 +193,21 @@ export const ClientModal: React.FC<ClientModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>
-              {clientToEdit ? 'Editar entrenado' : 'Nuevo entrenado'}
-            </Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={20} color={COLORS.textSecondary} />
-            </TouchableOpacity>
-          </View>
+    <ResponsiveModal visible={visible} onClose={onClose}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          {clientToEdit ? 'Editar entrenado' : 'Nuevo entrenado'}
+        </Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
             <Text style={styles.label}>Nombre completo</Text>
             <TextInput
               style={styles.input}
@@ -414,9 +412,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({
               </TouchableOpacity>
             ) : null}
           </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </ResponsiveModal>
   );
 };
 

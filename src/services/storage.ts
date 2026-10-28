@@ -10,7 +10,7 @@ const STORAGE_KEYS = {
 
 export const DEFAULT_SETTINGS: TrainerSettings = {
   trainerName: 'Derwin',
-  gymName: 'Derwin Fitness Club',
+  gymName: 'Gym Tracking',
   currency: '$',
   defaultCountryCode: '58',
   paymentDetails: {

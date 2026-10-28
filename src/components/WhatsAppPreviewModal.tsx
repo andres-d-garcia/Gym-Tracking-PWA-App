@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 import { Client, TrainerSettings } from '../types';
 import { buildWhatsAppMessage, cleanPhoneNumber, openWhatsApp } from '../utils/whatsapp';
+import { ResponsiveModal } from './ResponsiveModal';
 
 interface WhatsAppPreviewModalProps {
   visible: boolean;
@@ -49,59 +47,43 @@ export const WhatsAppPreviewModal: React.FC<WhatsAppPreviewModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.headerTitle}>Mensaje de WhatsApp</Text>
-              <Text style={styles.headerSub}>
-                {client.fullName} · +{phoneToSend}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={20} color={COLORS.textSecondary} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <TextInput
-              style={styles.messageInput}
-              value={message}
-              onChangeText={setMessage}
-              multiline
-              textAlignVertical="top"
-              placeholderTextColor={COLORS.textMuted}
-            />
-
-            <TouchableOpacity style={styles.sendBtn} onPress={handleSend} activeOpacity={0.8}>
-              <FontAwesome name="whatsapp" size={18} color="#FFFFFF" />
-              <Text style={styles.sendBtnText}>Abrir WhatsApp</Text>
-            </TouchableOpacity>
-          </ScrollView>
+    <ResponsiveModal visible={visible} onClose={onClose}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Mensaje de WhatsApp</Text>
+          <Text style={styles.headerSub}>
+            {client.fullName} · +{phoneToSend}
+          </Text>
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
+        <TextInput
+          style={styles.messageInput}
+          value={message}
+          onChangeText={setMessage}
+          multiline
+          textAlignVertical="top"
+          placeholderTextColor={COLORS.textMuted}
+        />
+
+        <TouchableOpacity style={styles.sendBtn} onPress={handleSend} activeOpacity={0.8}>
+          <FontAwesome name="whatsapp" size={18} color="#FFFFFF" />
+          <Text style={styles.sendBtnText}>Abrir WhatsApp</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </ResponsiveModal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '85%',
-    borderTopWidth: 1,
-    borderTopColor: COLORS.surfaceBorder,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -126,7 +108,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   messageInput: {
     backgroundColor: COLORS.surfaceLight,
@@ -136,7 +118,7 @@ const styles = StyleSheet.create({
     padding: 14,
     color: COLORS.text,
     fontSize: 14,
-    minHeight: 170,
+    minHeight: 160,
     lineHeight: 20,
   },
   sendBtn: {

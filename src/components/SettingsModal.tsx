@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
@@ -8,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   Share,
 } from 'react-native';
@@ -21,6 +19,7 @@ import {
   clearClientsAndPayments,
   DEFAULT_SETTINGS,
 } from '../services/storage';
+import { ResponsiveModal } from './ResponsiveModal';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -237,24 +236,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Configuración</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={20} color={COLORS.textSecondary} />
-            </TouchableOpacity>
-          </View>
+    <ResponsiveModal visible={visible} onClose={onClose}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Configuración</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scroll}
-            keyboardShouldPersistTaps="handled"
-          >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+      >
             <Text style={styles.sectionTitle}>General</Text>
 
             <View style={styles.row}>
@@ -490,10 +484,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.8}>
               <Text style={styles.saveBtnText}>Guardar cambios</Text>
             </TouchableOpacity>
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+      </ScrollView>
+    </ResponsiveModal>
   );
 };
 

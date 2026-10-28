@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Modal,
   View,
   Text,
   StyleSheet,
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 import { PaymentRecord } from '../types';
 import { formatDateTime } from '../utils/date';
+import { ResponsiveModal } from './ResponsiveModal';
 
 interface PaymentHistoryModalProps {
   visible: boolean;
@@ -40,9 +40,8 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
   const totalFiltered = filtered.reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+    <ResponsiveModal visible={visible} onClose={onClose}>
+      <View style={{ minHeight: 380, maxHeight: '100%' }}>
           <View style={styles.header}>
             <View>
               <Text style={styles.headerTitle}>Historial de pagos</Text>
@@ -165,9 +164,8 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
               ) : null}
             </View>
           ) : null}
-        </View>
       </View>
-    </Modal>
+    </ResponsiveModal>
   );
 };
 
