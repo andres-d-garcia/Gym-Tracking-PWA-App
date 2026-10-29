@@ -24,8 +24,8 @@ export const DEFAULT_SETTINGS: TrainerSettings = {
     pagoMovilPhone: '0412-1234567',
     pagoMovilId: 'V-20123456',
     zelleEmail: 'derwincoach@gmail.com',
-    transferBank: 'Banco Mercantil',
-    transferAccount: '0105-0000-00-0000000000',
+    transferBank: '',
+    transferAccount: '',
     cashInstructions: 'Entrega directa al iniciar la rutina',
   },
   templates: {
@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: TrainerSettings = {
     overdue:
       '¡Hola {nombre}! Espero estés excelente. Te escribo para recordarte que tu mensualidad de entrenamiento venció el {fecha} ({dias_vencido} días pendientes) por un valor de *{monto}*.\n\nPor favor realiza tu pago a:\n{datos_pago}\n\n¡Para mantener tu cupo y plan al día, envíame el capture! 💪🔥',
     generalReminder:
-      '¡Hola {nombre}! Te saluda {entrenador}. Te recuerdo que tu mensualidad de {plan} vence el {fecha} ({monto}).\n\nDatos de pago:\n{datos_pago}\n\n¡Un abrazo!',
+      '¡Hola {nombre}! 💪 Te saluda {entrenador}. Tu plan de entrenamiento ({plan}) está *al día* y tu próxima fecha de corte es el *{fecha}* (quedan {dias} días).\n\n¡Seguimos enfocados dándole con todo! 🔥🏋️‍♂️',
   },
 };
 
@@ -229,6 +229,14 @@ export async function getSettings(): Promise<TrainerSettings> {
       return DEFAULT_SETTINGS;
     }
     const parsed = JSON.parse(data);
+    const mergedPaymentDetails = {
+      ...DEFAULT_SETTINGS.paymentDetails,
+      ...(parsed.paymentDetails || {}),
+    };
+    if (mergedPaymentDetails.transferAccount === '0105-0000-00-0000000000') {
+      mergedPaymentDetails.transferBank = '';
+      mergedPaymentDetails.transferAccount = '';
+    }
     return {
       ...DEFAULT_SETTINGS,
       ...parsed,
@@ -236,10 +244,7 @@ export async function getSettings(): Promise<TrainerSettings> {
         ...DEFAULT_SETTINGS.notifications,
         ...(parsed.notifications || {}),
       },
-      paymentDetails: {
-        ...DEFAULT_SETTINGS.paymentDetails,
-        ...(parsed.paymentDetails || {}),
-      },
+      paymentDetails: mergedPaymentDetails,
       templates: {
         ...DEFAULT_SETTINGS.templates,
         ...(parsed.templates || {}),

@@ -41,20 +41,35 @@ export function formatPaymentDetails(settings: TrainerSettings): string {
   return parts.join('\n');
 }
 
-export function buildWhatsAppMessage(client: Client, settings: TrainerSettings): string {
+export type WhatsAppTemplateKey = 'generalReminder' | 'dueSoon' | 'dueToday' | 'overdue';
+
+export function getTemplateKeyForClient(
+  client: Client,
+  settings: TrainerSettings
+): WhatsAppTemplateKey {
   const days = getDaysDifference(client.nextDueDate);
   const dueSoonDays = settings.notifications?.daysBefore ?? 3;
-  let template = settings.templates.generalReminder;
 
-  if (days < 0) {
-    template = settings.templates.overdue;
-  } else if (days === 0) {
-    template = settings.templates.dueToday;
-  } else if (days <= dueSoonDays) {
-    template = settings.templates.dueSoon;
-  }
+  if (days < 0) return 'overdue';
+  if (days === 0) return 'dueToday';
+  if (days <= dueSoonDays) return 'dueSoon';
+  return 'generalReminder';
+}
 
-  const paymentText = formatPaymentDetails(settings);
+export function buildWhatsAppMessage(
+  client: Client,
+  settings: TrainerSettings,
+  overrideKey?: WhatsAppTemplateKey,
+  customTemplateText?: string
+): string {
+  const days = getDaysDifference(client.nextDueDate);
+  const key = overrideKey ?? getTemplateKeyForClient(client, settings);
+  const template =
+    customTemplateText !== undefined
+      ? customTemplateText
+      : settings.templates[key] || settings.templates.generalReminder;
+
+  const paymentText = formatPaymentDetails(settings) || '(Sin datos de pago configurados)';
   const formattedDueDate = formatDateSpanish(client.nextDueDate);
   const paid = client.paidAmount || 0;
   const remaining = Math.max(0, Math.round((client.amount - paid) * 100) / 100);

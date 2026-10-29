@@ -389,12 +389,46 @@ export const ClientModal: React.FC<ClientModalProps> = ({
               <TouchableOpacity
                 style={styles.secondaryActionBtn}
                 onPress={() => {
+                  const numAmount = parseFloat(amount);
+                  const parsedDays = parseInt(daysCount, 10);
+                  const updatedPreviewClient: Client = {
+                    ...clientToEdit,
+                    fullName: fullName.trim() || clientToEdit.fullName,
+                    phone: phone.trim() || clientToEdit.phone,
+                    countryCode: countryCode.trim() || '58',
+                    planName: planName.trim() || clientToEdit.planName,
+                    amount: !isNaN(numAmount) && numAmount > 0 ? numAmount : clientToEdit.amount,
+                    currency,
+                    startDate: startDate.trim() || clientToEdit.startDate,
+                    nextDueDate: /^\d{4}-\d{2}-\d{2}$/.test(nextDueDate.trim())
+                      ? nextDueDate.trim()
+                      : clientToEdit.nextDueDate,
+                    durationDays: !isNaN(parsedDays) && parsedDays > 0 ? parsedDays : 30,
+                    notes: notes.trim(),
+                  };
+                  onSave(
+                    {
+                      fullName: updatedPreviewClient.fullName,
+                      phone: updatedPreviewClient.phone,
+                      countryCode: updatedPreviewClient.countryCode,
+                      planName: updatedPreviewClient.planName,
+                      amount: updatedPreviewClient.amount,
+                      paidAmount: updatedPreviewClient.paidAmount,
+                      currency: updatedPreviewClient.currency,
+                      startDate: updatedPreviewClient.startDate,
+                      nextDueDate: updatedPreviewClient.nextDueDate,
+                      durationDays: updatedPreviewClient.durationDays,
+                      notes: updatedPreviewClient.notes,
+                      active: true,
+                    },
+                    clientToEdit.id
+                  );
                   onClose();
-                  onPreviewMessage(clientToEdit);
+                  onPreviewMessage(updatedPreviewClient);
                 }}
               >
                 <Ionicons name="chatbubble-outline" size={16} color={COLORS.textSecondary} />
-                <Text style={styles.secondaryActionText}>Personalizar mensaje de WhatsApp</Text>
+                <Text style={styles.secondaryActionText}>Ver / Enviar mensaje de WhatsApp</Text>
               </TouchableOpacity>
             ) : null}
 

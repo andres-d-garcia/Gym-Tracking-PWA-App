@@ -30,7 +30,7 @@ interface SettingsModalProps {
   onDataImported: () => void;
 }
 
-type TemplateKey = 'dueSoon' | 'dueToday' | 'overdue';
+type TemplateKey = 'generalReminder' | 'dueSoon' | 'dueToday' | 'overdue';
 
 const SMART_TAGS: { label: string; tag: string }[] = [
   { label: '+ Nombre del alumno', tag: '{nombre}' },
@@ -63,7 +63,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [transferAccount, setTransferAccount] = useState(settings.paymentDetails.transferAccount);
   const [cashInstructions, setCashInstructions] = useState(settings.paymentDetails.cashInstructions);
 
-  const [activeTemplateTab, setActiveTemplateTab] = useState<TemplateKey>('dueSoon');
+  const [activeTemplateTab, setActiveTemplateTab] = useState<TemplateKey>('generalReminder');
+  const [generalReminderTemplate, setGeneralReminderTemplate] = useState(
+    settings.templates.generalReminder
+  );
   const [dueSoonTemplate, setDueSoonTemplate] = useState(settings.templates.dueSoon);
   const [dueTodayTemplate, setDueTodayTemplate] = useState(settings.templates.dueToday);
   const [overdueTemplate, setOverdueTemplate] = useState(settings.templates.overdue);
@@ -94,6 +97,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setTransferBank(settings.paymentDetails.transferBank);
       setTransferAccount(settings.paymentDetails.transferAccount);
       setCashInstructions(settings.paymentDetails.cashInstructions);
+      setGeneralReminderTemplate(settings.templates.generalReminder);
       setDueSoonTemplate(settings.templates.dueSoon);
       setDueTodayTemplate(settings.templates.dueToday);
       setOverdueTemplate(settings.templates.overdue);
@@ -108,13 +112,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   }, [visible, settings]);
 
   const getCurrentTemplateValue = (): string => {
+    if (activeTemplateTab === 'generalReminder') return generalReminderTemplate;
     if (activeTemplateTab === 'dueSoon') return dueSoonTemplate;
     if (activeTemplateTab === 'dueToday') return dueTodayTemplate;
     return overdueTemplate;
   };
 
   const setCurrentTemplateValue = (val: string) => {
-    if (activeTemplateTab === 'dueSoon') setDueSoonTemplate(val);
+    if (activeTemplateTab === 'generalReminder') setGeneralReminderTemplate(val);
+    else if (activeTemplateTab === 'dueSoon') setDueSoonTemplate(val);
     else if (activeTemplateTab === 'dueToday') setDueTodayTemplate(val);
     else setOverdueTemplate(val);
   };
@@ -142,21 +148,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const raw = getCurrentTemplateValue();
     const parts: string[] = [];
     if (pagoMovilPhone && pagoMovilBank) {
-      parts.push(`📲 *Pago Móvil:*\n• Banco: ${pagoMovilBank}\n• Teléfono: ${pagoMovilPhone}${pagoMovilId ? `\n• C.I.: ${pagoMovilId}` : ''}`);
+      parts.push(
+        `📲 *Pago Móvil:*\n• Banco: ${pagoMovilBank}\n• Teléfono: ${pagoMovilPhone}${
+          pagoMovilId ? `\n• C.I.: ${pagoMovilId}` : ''
+        }`
+      );
     }
     if (zelleEmail) parts.push(`💵 *Zelle:* ${zelleEmail}`);
+    if (transferBank && transferAccount) {
+      parts.push(`🏦 *Transferencia:* ${transferBank} - ${transferAccount}`);
+    }
     if (cashInstructions) parts.push(`💵 *Efectivo:* ${cashInstructions}`);
-    const paymentPreview = parts.join('\n') || '(Tus datos de pago)';
+    const paymentPreview = parts.join('\n') || '(Sin datos de pago configurados)';
+
+    const sampleDays =
+      activeTemplateTab === 'generalReminder'
+        ? '18'
+        : activeTemplateTab === 'dueToday'
+        ? '0'
+        : '2';
 
     return raw
       .replace(/{nombre}/g, 'Carlos Mendoza')
       .replace(/{monto}/g, `${currency || '$'} 30`)
       .replace(/{fecha}/g, '28 Oct 2026')
-      .replace(/{dias}/g, '2')
+      .replace(/{dias}/g, sampleDays)
       .replace(/{dias_vencido}/g, '3')
       .replace(/{plan}/g, 'Personalizado')
       .replace(/{entrenador}/g, trainerName || 'Derwin')
-      .replace(/{gimnasio}/g, gymName || 'Derwin Fitness')
+      .replace(/{gimnasio}/g, gymName || 'Gym Tracking')
       .replace(/{datos_pago}/g, paymentPreview);
   };
 
@@ -165,7 +185,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const updated: TrainerSettings = {
       ...settings,
       trainerName: trainerName.trim() || 'Derwin',
-      gymName: gymName.trim() || 'Derwin Fitness',
+      gymName: gymName.trim() || 'Gym Tracking',
       currency: currency.trim() || '$',
       defaultCountryCode: defaultCountryCode.trim() || '58',
       paymentDetails: {
@@ -179,6 +199,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       },
       templates: {
         ...settings.templates,
+        generalReminder: generalReminderTemplate,
         dueSoon: dueSoonTemplate,
         dueToday: dueTodayTemplate,
         overdue: overdueTemplate,
@@ -494,6 +515,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               keyboardType="email-address"
             />
 
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Banco Transferencia (opc.)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={transferBank}
+                  onChangeText={setTransferBank}
+                  placeholder="Ej. Mercantil"
+                  placeholderTextColor={COLORS.textMuted}
+                />
+              </View>
+              <View style={{ width: 12 }} />
+              <View style={{ flex: 1.3 }}>
+                <Text style={styles.label}>Nro. de Cuenta (opc.)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={transferAccount}
+                  onChangeText={setTransferAccount}
+                  placeholder="0105-..."
+                  placeholderTextColor={COLORS.textMuted}
+                />
+              </View>
+            </View>
+
             <Text style={styles.label}>Notas de efectivo (opcional)</Text>
             <TextInput
               style={styles.input}
@@ -506,10 +551,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {/* Didactic Message Editor */}
             <Text style={styles.sectionTitle}>Mensajes automáticos de WhatsApp</Text>
 
-            {/* 3 Tabs for the 3 situations */}
+            {/* 4 Tabs for the 4 situations */}
             <View style={styles.templateTabs}>
               {(
                 [
+                  { key: 'generalReminder', label: 'Al día' },
                   { key: 'dueSoon', label: 'Por vencer' },
                   { key: 'dueToday', label: 'Vence hoy' },
                   { key: 'overdue', label: 'Vencido' },
@@ -540,6 +586,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* Didactic Smart Tag Buttons */}
             <View style={styles.editorBox}>
+              <Text style={styles.tabStatusNote}>
+                {activeTemplateTab === 'generalReminder'
+                  ? '🟢 Al día: Se usa cuando al entrenado aún le quedan más días para su corte.'
+                  : activeTemplateTab === 'dueSoon'
+                  ? `🟡 Por vencer: Se usa cuando faltan ${
+                      Number(notifDaysBefore) || 3
+                    } días o menos para el corte.`
+                  : activeTemplateTab === 'dueToday'
+                  ? '🟠 Vence hoy: Se usa el día exacto en que vence su mensualidad.'
+                  : '🔴 Vencido: Se usa cuando la fecha de cobro ya pasó.'}
+              </Text>
+
               <Text style={styles.helperText}>
                 Toca un botón para insertar ese dato automáticamente en tu mensaje:
               </Text>
@@ -733,6 +791,15 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: COLORS.surfaceBorder,
+  },
+  tabStatusNote: {
+    fontSize: 12,
+    color: COLORS.text,
+    fontWeight: '500',
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.surfaceBorder,
   },
   helperText: {
     fontSize: 12,

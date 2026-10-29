@@ -377,7 +377,7 @@ function MainScreen() {
             <ClientCard
               client={item}
               dueSoonDays={dueSoonDays}
-              onDirectWhatsApp={handleDirectWhatsApp}
+              onDirectWhatsApp={handlePreviewWhatsApp}
               onPreviewWhatsApp={handlePreviewWhatsApp}
               onRegisterPayment={handleOpenPayment}
               onEditClient={(client) => {
@@ -410,6 +410,7 @@ function MainScreen() {
           client={clientForWhatsApp}
           settings={settings}
           onClose={() => setPreviewWhatsAppVisible(false)}
+          onSaveSettings={handleSaveSettings}
         />
 
         <SettingsModal
@@ -433,7 +434,10 @@ function MainScreen() {
           clients={clients}
           onClose={() => setNotificationsModalVisible(false)}
           onSaveSettings={handleSaveSettings}
-          onDirectWhatsApp={handleDirectWhatsApp}
+          onDirectWhatsApp={(c) => {
+            setNotificationsModalVisible(false);
+            handlePreviewWhatsApp(c);
+          }}
         />
       </View>
     </SafeAreaView>
